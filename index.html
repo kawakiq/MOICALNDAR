@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь с Событиями</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Экран входа/регистрации -->
+    <div class="auth-screen" id="authScreen">
+        <div class="auth-container">
+            <h1>📅 Календарь</h1>
+            
+            <!-- Форма входа -->
+            <div class="auth-form" id="loginForm">
+                <h2>Вход</h2>
+                <input type="text" id="loginUsername" placeholder="Имя пользователя" required>
+                <input type="password" id="loginPassword" placeholder="Пароль" required>
+                <button class="auth-btn" id="loginBtn">Войти</button>
+                <p class="auth-switch">Нет аккаунта? <span id="showRegister">Зарегистрироваться</span></p>
+            </div>
+            
+            <!-- Форма регистрации -->
+            <div class="auth-form hidden" id="registerForm">
+                <h2>Регистрация</h2>
+                <input type="text" id="registerUsername" placeholder="Имя пользователя" required>
+                <input type="password" id="registerPassword" placeholder="Пароль" required>
+                <input type="password" id="registerPasswordConfirm" placeholder="Подтвердите пароль" required>
+                <button class="auth-btn" id="registerBtn">Зарегистрироваться</button>
+                <p class="auth-switch">Уже есть аккаунт? <span id="showLogin">Войти</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Главный экран календаря -->
+    <div class="main-screen hidden" id="mainScreen">
+        <!-- Верхняя панель с настройками -->
+        <div class="top-bar">
+            <div class="user-info">
+                <span id="currentUsername">Пользователь</span>
+            </div>
+            <div class="top-actions">
+                <button class="icon-btn" id="settingsBtn" title="Настройки">⚙️</button>
+                <button class="icon-btn" id="logoutBtn" title="Выйти">🚪</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Режимы отображения -->
+            <div class="view-modes">
+                <button class="mode-btn active" data-mode="month">Месяц</button>
+                <button class="mode-btn" data-mode="week">Неделя</button>
+                <button class="mode-btn" data-mode="day">День</button>
+            </div>
+
+            <!-- Шапка календаря -->
+            <div class="header">
+                <div class="month-year" id="monthYear"></div>
+                <div class="nav-buttons">
+                    <button class="nav-btn" id="prevBtn">‹</button>
+                    <button class="nav-btn" id="nextBtn">›</button>
+                </div>
+            </div>
+
+            <!-- Фильтры и добавление события -->
+            <div class="controls">
+                <button class="add-event-btn" id="addEventBtn">+ Добавить событие</button>
+                <select class="filter-select" id="filterSelect">
+                    <option value="all">Все события</option>
+                    <option value="work">Работа</option>
+                    <option value="personal">Личное</option>
+                    <option value="important">Важное</option>
+                </select>
+            </div>
+
+            <!-- Календарь -->
+            <div class="calendar-view">
+                <!-- Месячный вид -->
+                <div class="month-view" id="monthView">
+                    <div class="weekdays">
+                        <div class="weekday">Пн</div>
+                        <div class="weekday">Вт</div>
+                        <div class="weekday">Ср</div>
+                        <div class="weekday">Чт</div>
+                        <div class="weekday">Пт</div>
+                        <div class="weekday">Сб</div>
+                        <div class="weekday">Вс</div>
+                    </div>
+                    <div class="days" id="daysContainer"></div>
+                </div>
+
+                <!-- Недельный вид -->
+                <div class="week-view hidden" id="weekView"></div>
+
+                <!-- Дневной вид -->
+                <div class="day-view hidden" id="dayView"></div>
+            </div>
+
+            <!-- Список событий -->
+            <div class="events-section">
+                <h3 class="events-title">События <span id="eventCount"></span></h3>
+                <div id="eventsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления/редактирования события -->
+    <div class="modal hidden" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Добавить событие</h2>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <form id="eventForm">
+                <input type="hidden" id="eventId">
+                
+                <label>Название события:</label>
+                <input type="text" id="eventTitle" required placeholder="Введите название...">
+                
+                <label>Дата:</label>
+                <input type="date" id="eventDate" required>
+                
+                <label>Время:</label>
+                <input type="time" id="eventTime" required>
+                
+                <label>Категория:</label>
+                <select id="eventCategory">
+                    <option value="work">Работа</option>
+                    <option value="personal">Личное</option>
+                    <option value="important">Важное</option>
+                </select>
+                
+                <label>Описание:</label>
+                <textarea id="eventDescription" placeholder="Дополнительная информация..."></textarea>
+                
+                <label>
+                    <input type="checkbox" id="eventNotification">
+                    Уведомить за 15 минут
+                </label>
+                
+                <div class="modal-buttons">
+                    <button type="submit" class="save-btn">Сохранить</button>
+                    <button type="button" class="delete-btn hidden" id="deleteEventBtn">Удалить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно настроек -->
+    <div class="modal hidden" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Настройки</h2>
+                <button class="close-btn" id="closeSettings">&times;</button>
+            </div>
+            
+            <div class="settings-section">
+                <h3>Тема оформления</h3>
+                <div class="theme-options">
+                    <div class="theme-card" data-theme="default">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #355e80, #17305f)"></div>
+                        <span>По умолчанию</span>
+                    </div>
+                    <div class="theme-card" data-theme="purple">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #667eea, #764ba2)"></div>
+                        <span>Фиолетовая</span>
+                    </div>
+                    <div class="theme-card" data-theme="green">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #11998e, #38ef7d)"></div>
+                        <span>Зелёная</span>
+                    </div>
+                    <div class="theme-card" data-theme="orange">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #f46b45, #eea849)"></div>
+                        <span>Оранжевая</span>
+                    </div>
+                    <div class="theme-card" data-theme="dark">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #232526, #414345)"></div>
+                        <span>Тёмная</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Язык</h3>
+                <select id="languageSelect" class="settings-select">
+                    <option value="ru">Русский</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <div class="settings-section">
+                <h3>Уведомления</h3>
+                <label class="switch-label">
+                    <input type="checkbox" id="notificationsToggle" checked>
+                    <span>Включить уведомления</span>
+                </label>
+            </div>
+
+            <div class="settings-section">
+                <h3>Данные</h3>
+                <button class="danger-btn" id="clearDataBtn">Очистить все события</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div class="notifications" id="notifications"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
